@@ -40,6 +40,7 @@ do
 	 GROUP=$(pidof -x $PNAME)
 
 	 if [ $? != 0 ]; then
+	  echo
 	  echo "Process with name $PNAME not found" >&2
 	  continue	  
 	 fi 
