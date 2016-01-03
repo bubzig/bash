@@ -17,6 +17,7 @@ quit(){
  continue 
 }
 
+GROUP=-1
 # main loop
 while [ true ];
 do
@@ -24,7 +25,7 @@ do
  echo "Please, choose option:"
  echo "(1) Display all processes"
  echo "(2) Display processes by name"
- echo "(3) Input PID(s)"
+ echo "(3) Input PID(s) for sending signals"
  echo "(4) Quit "
 
  read OPT
@@ -37,6 +38,12 @@ do
   2) echo "Input name of process"
  	 read PNAME
 	 GROUP=$(pidof -x $PNAME)
+
+	 if [ $? != 0 ]; then
+	  echo "Process with name $PNAME not found" >&2
+	  continue	  
+	 fi 
+
 	 ps -co pid,uid,tty,stat,cmd -p $GROUP
 	 continue
      ;;
@@ -48,26 +55,48 @@ do
 	  
 	 read PID
 
+	 # group of PIDs with same name
 	 if [ "$GROUP" != "-1" ] && [ "$PID" == "0" ]; then
 	   PID=$(echo $GROUP) 
 	   echo "All"
 	   echo "$PID"      
 	 else
-
-	   re='[1-9][0-9]*(\s[1-9][0-9]*)*'
-
+	   # verify PIDs are correct 
+	   re='^[1-9][0-9]*(\s[1-9][0-9]*)*$'
 	   if ! [[ $PID =~ $re ]] ; then
 		echo "Wrong PID(s)" >&2
 		quit 250
 	   fi 
 
-	   ps -p $PID > /dev/null 
+	   # verify PIDs are exsist
+	   p=0
+	   i=1
+	   stop=0
+	   while [ true ]
+	   do 
+	    p=$(echo $PID | cut -d' ' -f$i)
 
-	   if [ $? != 0 ]; then
-		echo "PID(s) not found" >&2
-		quit 250
-	   fi 
+	    if ! [ "$p" ]; then
+	     break
+	    fi
+
+	    ps -p $p > /dev/null
+	    if [ $? != 0 ]; then
+	     echo "PID $PID not found" >&2
+	     stop=1
+	     break 
+	    fi 
+	    i="$(($i+1))"
+	   done 
+
+	   if [ $stop == 1 ]; then 
+	    quit 250
+	   fi
+
 	 fi
+
+
+
 
 	 while [ true ];
 	  do
