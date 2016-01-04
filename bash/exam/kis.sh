@@ -70,35 +70,23 @@ do
 	   fi 
 
 	   # verify PIDs are exsist
-	   p=0
-	   i=1
+	   PIDS=$(echo $PID)
 	   stop=0
-	   while [ true ]
-	   do 
-	    p=$(echo $PID | cut -d' ' -f$i)
-
-	    if ! [ "$p" ]; then
-	     break
-	    fi
-
-	    ps -p $p > /dev/null
-	    if [ $? != 0 ]; then
-	     echo "PID $PID not found" >&2
-	     stop=1
-	     break 
-	    fi 
-	    i="$(($i+1))"
-	   done 
-
+	   for p in $PIDS; do
+         ps -p $p > /dev/null
+         
+	     if [ $? != 0 ]; then
+	      echo "PID $p not found" >&2
+	      stop=1
+	      break 
+	     fi
+	   done
+	   
 	   if [ $stop == 1 ]; then 
 	    quit 250
-	   fi
-
+	   fi	   
 	 fi
-
-
-
-
+	 
 	 while [ true ];
 	  do
 	   echo "Please, choose signal:"
