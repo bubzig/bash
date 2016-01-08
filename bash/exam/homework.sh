@@ -66,9 +66,6 @@ SendSignals(){
    done
 }
 
-#echo "Watch processes list"
-#ps ux
-
 while [ true ];
 do 
  
@@ -132,7 +129,9 @@ do
 	 if [ $stop == 1 ]; then 
 	  quit 250
 	 fi
-   
+     
+     ps -co pid,uid,tty,stat,cmd -p $PIDS
+
      SendSignals
 
 	 continue
